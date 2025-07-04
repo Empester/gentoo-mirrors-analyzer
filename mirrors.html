@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentoo Mirror Analyzer - Ultimate Latency Testing</title>
+    <meta name="description" content="Advanced Gentoo mirror latency analyzer with real-time testing and detailed statistics" />
+    <meta name="keywords" content="gentoo, mirror, latency, analyzer, network, testing" />
+    <meta property="og:title" content="Gentoo Mirror Analyzer" />
+    <meta property="og:description" content="Advanced Gentoo mirror latency analyzer with real-time testing and detailed statistics" />
+    <meta property="og:type" content="website" />
+    <meta name="author" content="Empester" />
+    
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/96590604?v=4" type="image/x-icon" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="mirrors_style.css">
+</head>
+<body>
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Initializing Mirror Analyzer...</h3>
+            <p>Preparing network testing environment</p>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="glass-container">
+            <div class="header">
+                <h1>
+                    <i class="bi bi-speedometer2"></i>
+                    Gentoo Mirror Analyzer
+                </h1>
+                <p>Ultimate Latency Testing & Performance Analysis</p>
+                
+                <div class="status-indicator">
+                    <span class="status-dot ready"></span>
+                    <span class="status-text">Ready</span>
+                </div>
+                
+                <button class="btn btn-outline" id="themeToggle">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="glass-container">
+            <h3><i class="bi bi-gear"></i> Test Configuration</h3>
+            <div class="control-panel">
+                <div class="control-group">
+                    <label for="testCycles">Test Cycles</label>
+                    <input type="number" id="testCycles" value="10" min="1" max="50">
+                </div>
+                <div class="control-group">
+                    <label for="delayMs">Delay (ms)</label>
+                    <input type="number" id="delayMs" value="1000" min="100" max="5000">
+                </div>
+                <div class="control-group">
+                    <label for="failThreshold">Fail Threshold</label>
+                    <input type="number" id="failThreshold" value="2" min="1" max="10">
+                </div>
+                <div class="control-group">
+                    <label for="maxLatency">Max Latency (ms)</label>
+                    <input type="number" id="maxLatency" value="400" min="100" max="2000">
+                </div>
+            </div>
+            
+            <div class="d-flex gap-3 flex-wrap">
+                <button class="btn btn-primary" id="startTest">
+                    <i class="bi bi-play-circle"></i> Start Analysis
+                </button>
+                <button class="btn btn-danger" id="stopTest" disabled>
+                    <i class="bi bi-stop-circle"></i> Stop
+                </button>
+                <button class="btn btn-outline" id="exportResults">
+                    <i class="bi bi-download"></i> Export Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progressSection">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <h3><i class="bi bi-activity"></i> Test Progress</h3>
+                </div>
+                <div class="progress-info">
+                    <span>Current Mirror: <span id="currentMirror">-</span></span>
+                    <span>Progress: <span id="progressText">0 / 0</span></span>
+                    <span>Elapsed Time: <span id="elapsedTime">00:00</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer">
+            <div class="glass-container">
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="overview">
+                            <i class="bi bi-list-ul"></i> Overview
+                        </button>
+                        <button class="tab-button" data-tab="detailed">
+                            <i class="bi bi-graph-up"></i> Detailed Analysis
+                        </button>
+                        <button class="tab-button" data-tab="charts">
+                            <i class="bi bi-bar-chart"></i> Charts
+                        </button>
+                        <button class="tab-button" data-tab="comparison">
+                            <i class="bi bi-arrow-left-right"></i> Comparison
+                        </button>
+                        <button class="tab-button" data-tab="settings">
+                            <i class="bi bi-gear"></i> Settings
+                        </button>
+                    </div>
+
+                    <!-- Overview Tab -->
+                    <div class="tab-content active" id="overview">
+                        <div class="overview-grid">
+                            <div class="overview-card">
+                                <h3><i class="bi bi-trophy"></i> Top Performers</h3>
+                                <div id="topPerformers">
+                                    <!-- Top performers will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <div class="overview-card">
+                                <h3><i class="bi bi-exclamation-triangle"></i> Failed Mirrors</h3>
+                                <div id="failedMirrors">
+                                    <!-- Failed mirrors will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <div class="overview-card">
+                                <h3><i class="bi bi-speedometer"></i> Performance Summary</h3>
+                                <div id="performanceSummary">
+                                    <!-- Performance summary will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <div class="overview-card">
+                                <h3><i class="bi bi-clock-history"></i> Test History</h3>
+                                <div id="testHistory">
+                                    <!-- Test history will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Analysis Tab -->
+                    <div class="tab-content" id="detailed">
+                        <div id="detailedResults">
+                            <!-- Detailed results will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Charts Tab -->
+                    <div class="tab-content" id="charts">
+                        <div class="charts-grid">
+                            <div class="chart-container">
+                                <h3>Latency Distribution</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="latencyChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <h3>Jitter Analysis</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="jitterChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <h3>Success Rate</h3>
+                                <div class="chart-wrapper">
+                                    <canvas id="successChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Tab -->
+                    <div class="tab-content" id="comparison">
+                        <div class="comparison-section">
+                            <div class="comparison-controls">
+                                <select id="mirror1">
+                                    <option value="">Select first mirror</option>
+                                </select>
+                                <select id="mirror2">
+                                    <option value="">Select second mirror</option>
+                                </select>
+                                <button class="btn btn-primary" id="compareMirrors">
+                                    <i class="bi bi-arrow-left-right"></i> Compare
+                                </button>
+                            </div>
+                            <div id="comparisonResults">
+                                <!-- Comparison results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-content" id="settings">
+                        <div class="settings-grid">
+                            <div class="settings-card">
+                                <h3>Mirror Management</h3>
+                                <div id="mirrorList">
+                                    <!-- Mirror list will be populated here -->
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap mt-3">
+                                    <button class="btn btn-outline" id="addMirror">
+                                        <i class="bi bi-plus-circle"></i> Add Mirror
+                                    </button>
+                                    <button class="btn btn-outline" id="importMirrors">
+                                        <i class="bi bi-upload"></i> Import List
+                                    </button>
+                                    <button class="btn btn-outline" id="exportMirrors">
+                                        <i class="bi bi-download"></i> Export List
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card">
+                                <h3>Display Options</h3>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Show latency graphs</div>
+                                        <div class="setting-description">Display visual latency graphs in detailed results</div>
+                                    </div>
+                                    <input type="checkbox" id="showGraphs" checked>
+                                </div>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Auto-refresh results</div>
+                                        <div class="setting-description">Update results in real-time during testing</div>
+                                    </div>
+                                    <input type="checkbox" id="autoRefresh" checked>
+                                </div>
+                                <div class="setting-item">
+                                    <div>
+                                        <div class="setting-label">Enable notifications</div>
+                                        <div class="setting-description">Show notifications for test completion and errors</div>
+                                    </div>
+                                    <input type="checkbox" id="notifications" checked>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal fade" id="addMirrorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Mirror</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="control-group">
+                        <label for="newMirrorUrl">Mirror URL</label>
+                        <input type="url" id="newMirrorUrl" placeholder="https://mirror.example.com/gentoo/">
+                    </div>
+                    <div class="control-group">
+                        <label for="newMirrorName">Display Name (Optional)</label>
+                        <input type="text" id="newMirrorName" placeholder="Example Mirror">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveMirror">Add Mirror</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="mirrors_script.js"></script>
+</body>
+</html> 
